@@ -22,7 +22,7 @@ class DataBackupAndRestore:
             aws_secret_access_key {string} -- AWS secret access key
         """
         self.s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, 
-        config=Config(proxies={'http': proxy}))
+        config=Config(proxies={'https': proxy}))
     
     def backup(self):
         """
