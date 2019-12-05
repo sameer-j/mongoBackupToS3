@@ -4,6 +4,7 @@ import os, shutil
 import click
 from datetime import datetime
 import tarfile
+import getpass
 
 class DataBackupAndRestore:
     """
@@ -109,6 +110,10 @@ def make_tarfile(output_filename, source_dir):
 def backupAndRestoreAutomation(op, s3bucket):
     aws_access_key_id = os.getenv('aws_access_key_id')# get from env variable in jenkins
     aws_secret_access_key = os.getenv('aws_secret_access_key')# get from env variable in jenkins
+    if aws_access_key_id is None:
+        aws_access_key_id = getpass.getpass(prompt='aws access key id:')
+    if aws_secret_access_key is None:
+        aws_secret_access_key = getpass.getpass(prompt='aws secret access key:')
     s3_bucket = s3bucket
     bkpRstr = DataBackupAndRestore(aws_access_key_id, aws_secret_access_key)
     if op == 'backup':
