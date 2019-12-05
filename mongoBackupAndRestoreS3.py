@@ -1,4 +1,5 @@
 import boto3
+from botocore.config import Config
 import subprocess
 import os, shutil
 import click
@@ -13,14 +14,15 @@ class DataBackupAndRestore:
     TODO: Restore
     """
 
-    def __init__(self, aws_access_key_id, aws_secret_access_key):
+    def __init__(self, aws_access_key_id, aws_secret_access_key, proxy):
         """Initialize the object
         
         Arguments:
             aws_access_key_id {string} -- AWS access key id
             aws_secret_access_key {string} -- AWS secret access key
         """
-        self.s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+        self.s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, 
+        config=Config(proxies={'http': proxy}))
     
     def backup(self):
         """
@@ -107,7 +109,8 @@ def make_tarfile(output_filename, source_dir):
 @click.command()
 @click.option('--op', required=True, type=str, help="type of operation: backup or restore")
 @click.option('--s3bucket', required=True, type=str, help="aws bucket name")
-def backupAndRestoreAutomation(op, s3bucket):
+@click.option('--proxy', default=None, type=str, help="proxy for aws")
+def backupAndRestoreAutomation(op, s3bucket, proxy):
     aws_access_key_id = os.getenv('aws_access_key_id')# get from env variable in jenkins
     aws_secret_access_key = os.getenv('aws_secret_access_key')# get from env variable in jenkins
     if aws_access_key_id is None:
@@ -115,7 +118,7 @@ def backupAndRestoreAutomation(op, s3bucket):
     if aws_secret_access_key is None:
         aws_secret_access_key = getpass.getpass(prompt='aws secret access key:')
     s3_bucket = s3bucket
-    bkpRstr = DataBackupAndRestore(aws_access_key_id, aws_secret_access_key)
+    bkpRstr = DataBackupAndRestore(aws_access_key_id, aws_secret_access_key, proxy)
     if op == 'backup':
         try:
             backup_filename = bkpRstr.backup()
